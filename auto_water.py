@@ -1,7 +1,7 @@
 from gpiozero import *
 from signal import pause
 
-water_motor = DigitalOutputDevice(1)
+water_motor = DigitalOutputDevice(2)
 
 
 def auto_water_on(on_time, off_time):
