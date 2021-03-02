@@ -1,6 +1,5 @@
 """SpaPi: Sauna Control and Automatic Water Dispencer"""
 import time
-import sys
 import RPi.GPIO as GPIO
 
 GPIO.setwarnings(True)
@@ -20,8 +19,7 @@ try:
         for i2 in range(PARTS, 0, -1):
             GPIO.output(17, GPIO.HIGH)
             for i in range(PART_ON_TIME, 0, -1):
-                sys.stdout.write(str(i)+' ')
-                sys.stdout.flush()
+                print(i, flush=True)
                 time.sleep(1)
 
             GPIO.output(17, GPIO.LOW)
@@ -30,8 +28,7 @@ try:
         print("Water Stopping...")
         GPIO.output(17, GPIO.LOW)
         for i in range(TIME_OFF, 0, -1):
-            sys.stdout.write(str(i)+' ')
-            sys.stdout.flush()
+            print(i, flush=True)
             time.sleep(1)
 
 except KeyboardInterrupt:
