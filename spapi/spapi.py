@@ -9,22 +9,23 @@ GPIO.setmode(GPIO.BCM)
 GPIO.setup(17, GPIO.OUT)
 
 TIME_ON = 20
-PARTS = 4
 TIME_OFF = 300
-PART_TIME = 3
+PARTS = 4
+PART_ON_TIME = 3
+PART_OFF_TIME = 3
 
 try:
     while True:
         print("Water Running...")
         for i2 in range(PARTS, 0, -1):
             GPIO.output(17, GPIO.HIGH)
-            for i in range(PART_TIME, 0, -1):
+            for i in range(PART_ON_TIME, 0, -1):
                 sys.stdout.write(str(i)+' ')
                 sys.stdout.flush()
                 time.sleep(1)
 
             GPIO.output(17, GPIO.LOW)
-            time.sleep(3)
+            time.sleep(PART_OFF_TIME)
 
         print("Water Stopping...")
         GPIO.output(17, GPIO.LOW)
@@ -34,6 +35,10 @@ try:
             time.sleep(1)
 
 except KeyboardInterrupt:
+    GPIO.output(17, GPIO.LOW)
+    GPIO.cleanup()
+    print("exiting...")
+finally:
     GPIO.output(17, GPIO.LOW)
     GPIO.cleanup()
     print("exiting...")
