@@ -1,41 +1,41 @@
-"""SpaPi: Sauna Control and Automatic Water Dispencer"""
-import time
-import RPi.GPIO as GPIO
+"""
+import sys
+import os
 
-GPIO.setwarnings(True)
+module_path = os.path.abspath(os.getcwd())
 
-GPIO.setmode(GPIO.BCM)
-GPIO.setup(17, GPIO.OUT)
+if module_path not in sys.path:
 
-TIME_ON = 20
-TIME_OFF = 300
-PARTS = 4
-PART_ON_TIME = 3
-PART_OFF_TIME = 3
+    sys.path.append(module_path)
+"""
+from components.water import controllers
+from components.water import segments
+
+CONTROLLER = controllers.WaterController(17)
+SCHEME = segments.WaterScheme(CONTROLLER)
+
+SEGMENT1 = segments.BurstSegment(3, 3, 2)
+SEGMENT2 = segments.IdleSegment(60)
+SEGMENT3 = segments.BurstSegment(3, 3, 2)
+SEGMENT4 = segments.IdleSegment(60)
+SEGMENT5 = segments.BurstSegment(3, 3, 2)
+SEGMENT6 = segments.IdleSegment(60)
+
+SCHEME.add(SEGMENT1)
+SCHEME.add(SEGMENT2)
+SCHEME.add(SEGMENT3)
+SCHEME.add(SEGMENT4)
+SCHEME.add(SEGMENT5)
+SCHEME.add(SEGMENT6)
 
 try:
     while True:
-        print("Water Running...")
-        for i2 in range(PARTS, 0, -1):
-            GPIO.output(17, GPIO.HIGH)
-            for i in range(PART_ON_TIME, 0, -1):
-                print(i, flush=True)
-                time.sleep(1)
-
-            GPIO.output(17, GPIO.LOW)
-            time.sleep(PART_OFF_TIME)
-
-        print("Water Stopping...")
-        GPIO.output(17, GPIO.LOW)
-        for i in range(TIME_OFF, 0, -1):
-            print(i, flush=True)
-            time.sleep(1)
+        while not SCHEME.execute():
+            print("running")
 
 except KeyboardInterrupt:
-    GPIO.output(17, GPIO.LOW)
-    GPIO.cleanup()
+    CONTROLLER.cleanup()
     print("exiting...")
 finally:
-    GPIO.output(17, GPIO.LOW)
-    GPIO.cleanup()
+    CONTROLLER.cleanup()
     print("exiting...")
