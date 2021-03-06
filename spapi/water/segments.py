@@ -1,7 +1,8 @@
 """Segments for constructing water schemes"""
 import time
 from abc import ABC, abstractmethod
-from components.water import controllers
+from water import controllers
+from sauna import thermometer
 
 class Segment(ABC):
     """
@@ -71,8 +72,9 @@ class WaterScheme:
         self.segments.clear()
 
     def execute(self) -> bool:
-        for obj in self.segments:
-            while not obj.execute_segmemt(self.watercontroller):
+        for segment in self.segments:
+            print('Executing Segment {}'.format(segment), flush=True)
+            print('Temperature = {}'.format(thermometer.read_temp()))
+            while not segment.execute_segmemt(self.watercontroller):
                 pass
-
         return True

@@ -1,23 +1,16 @@
 """
-import sys
-import os
-
-module_path = os.path.abspath(os.getcwd())
-
-if module_path not in sys.path:
-
-    sys.path.append(module_path)
+SpaPi, Sauna and Automatic-Water control for RaspberryPi
 """
-from components.water import controllers
-from components.water import segments
+from water import controllers
+from water import segments
 
 CONTROLLER = controllers.WaterController(17)
 SCHEME = segments.WaterScheme(CONTROLLER)
 
 SEGMENT1 = segments.BurstSegment(3, 2, 2)
-SEGMENT2 = segments.IdleSegment(300)
+SEGMENT2 = segments.IdleSegment(480)
 SEGMENT3 = segments.BurstSegment(5, 2, 4)
-SEGMENT4 = segments.IdleSegment(120)
+SEGMENT4 = segments.IdleSegment(300)
 
 SCHEME.add(SEGMENT1)
 SCHEME.add(SEGMENT2)
@@ -26,12 +19,11 @@ SCHEME.add(SEGMENT4)
 
 try:
     while True:
-        while not SCHEME.execute():
-            print("running")
-
+        print("running", flush=True)
+        while not SCHEME.execute():   
+            pass
 except KeyboardInterrupt:
-    CONTROLLER.cleanup()
-    print("exiting...")
+    pass
 finally:
     CONTROLLER.cleanup()
     print("exiting...")
