@@ -59,23 +59,83 @@ class BurstSegment(Segment):
                 watercontroller.water_off()
         return True
 
+"""Scheme that holds diferent segments to execute"""
 class WaterScheme:
-    """Scheme that holds diferent segments to execute"""
-    def __init__(self, watercontroller: controllers.WaterController):
-        self.segments = []
-        self.watercontroller = watercontroller
+
+    def __init__(self):
+        self._segments = []
+
+    def __setitem__(self, pos, segment: Segment):
+        self._segments[pos] = segment
+
+    def __getitem__(self, pos):
+        return self._segments[pos]
 
     def add(self, segment: Segment):
-        self.segments.append(segment)
+        self._segments.append(segment)
+
+    def remove_at(self, pos):
+        del self._segments[pos]
 
     def clear(self):
-        self.segments.clear()
+        self._segments.clear()
 
-    def execute(self) -> bool:
-        for segment in self.segments:
-            print('Executing Segment {}'.format(segment), flush=True)
-            temp = thermometer.read_temp()
-            print('Temperature = {}'.format(temp))
-            while not segment.execute_segmemt(self.watercontroller):
-                pass
-        return True
+    @property
+    def segments(self):
+        return self._segments
+
+"""SchemeRunner to start/pause/resume a waterscheme"""
+class SchemeRunner:
+
+    def __init__(self, controller: controllers.WaterController, scheme: WaterScheme):
+        self._controller = controller
+        self._waterscheme = scheme
+
+        self._pause = False
+        self._start = False
+
+    def pause(self) -> None:
+        self._pause = True
+
+    def resume(self) -> None:
+        self._pause = False
+
+    def stop(self) -> None:
+        self._start = False
+
+    def start(self, repeat: bool):
+        self._start = True
+
+        while self._start:
+            for segment in self._waterscheme.segments:
+                while self._pause is True:
+                    print("paused...")
+                print('Executing Segment {}'.format(segment), flush=True)
+                temp = thermometer.read_temp()
+                print('Temperature = {}'.format(temp))
+                segment.execute_segmemt(self._controller)
+
+            if not repeat:
+                return
+        else:
+            return
+
+    @property
+    def waterscheme(self):
+        # Getting the watherscheme
+        return self._waterscheme
+
+    @waterscheme.setter
+    def waterscheme(self, value):
+        # setting the watherscheme
+        self._waterscheme=value
+
+    @property
+    def controller(self):
+        # Getting the Controller
+        return self._controller
+
+    @controller.setter
+    def controller(self, value):
+        # When the rows are changed, the columns are updated
+        self._controller=value
