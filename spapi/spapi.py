@@ -11,8 +11,8 @@ CONTROLLER = controllers.WaterController(17)
 SCHEME = scheme.WaterScheme()
 
 SEGMENT1 = scheme.BurstSegment(3, 2, 2)
-SEGMENT2 = scheme.IdleSegment(480)
-SEGMENT3 = scheme.BurstSegment(5, 2, 4)
+SEGMENT2 = scheme.IdleSegment(600)
+SEGMENT3 = scheme.BurstSegment(6, 2, 4)
 SEGMENT4 = scheme.IdleSegment(300)
 
 SCHEME.add(SEGMENT1)
@@ -30,5 +30,6 @@ try:
 except KeyboardInterrupt:
     pass
 finally:
+    SCHEMERUNNER.stop()
     CONTROLLER.cleanup()
     print("exiting...")
