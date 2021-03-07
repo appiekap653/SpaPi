@@ -11,9 +11,9 @@ CONTROLLER = controllers.WaterController(17)
 SCHEME = scheme.WaterScheme()
 
 SEGMENT1 = scheme.BurstSegment(3, 2, 2)
-SEGMENT2 = scheme.IdleSegment(480)
+SEGMENT2 = scheme.IdleSegment(5)
 SEGMENT3 = scheme.BurstSegment(5, 2, 4)
-SEGMENT4 = scheme.IdleSegment(300)
+SEGMENT4 = scheme.IdleSegment(5)
 
 SCHEME.add(SEGMENT1)
 SCHEME.add(SEGMENT2)
@@ -26,13 +26,13 @@ def run():
     SCHEMERUNNER.start(True)
 
 try:
-    t = Thread(target = run)
-    t.start()
+    SCHEMERUNNER.start(False)
     time.sleep(4)
     SCHEMERUNNER.pause()
     time.sleep(15)
     SCHEMERUNNER.resume()
-    t.join()
+    while SCHEMERUNNER.running:
+        pass
 
 except KeyboardInterrupt:
     pass
