@@ -74,7 +74,8 @@ class WaterScheme:
     def execute(self) -> bool:
         for segment in self.segments:
             print('Executing Segment {}'.format(segment), flush=True)
-            print('Temperature = {}'.format(thermometer.read_temp()))
+            temp = thermometer.read_temp()
+            print('Temperature = {}'.format(temp))
             while not segment.execute_segmemt(self.watercontroller):
                 pass
         return True

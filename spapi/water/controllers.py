@@ -6,8 +6,7 @@ import RPi.GPIO as GPIO
 
 class WaterController:
     """
-    Constructor to set GPIO mode
-    and define pin number to use
+    Constructor to set GPIO pin
     """
     def __init__(self, gpio_pin):
         self._gpio_pin = gpio_pin
