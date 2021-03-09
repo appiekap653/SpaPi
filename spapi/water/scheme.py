@@ -132,26 +132,27 @@ class SchemeRunner:
         self._thread.start()
 
     def _thread_task(self):
-        for segment in self._waterscheme.segments:
-            while self._pause is True:
-                self._status = RunnerStatus.Paused
-                print("paused...")
-            else:
-                self._status = RunnerStatus.Running
-            print('Executing Segment {}'.format(segment), flush=True)
-            temp = thermometer.read_temp()
-            print('Temperature = {}'.format(temp))
-            self._current_segment = segment
-            segment.execute_segmemt(self._controller)
+        while self._start:
+            for segment in self._waterscheme.segments:
+                while self._pause is True:
+                    self._status = RunnerStatus.Paused
+                    print("paused...")
+                else:
+                    self._status = RunnerStatus.Running
+                print('Executing Segment {}'.format(segment), flush=True)
+                temp = thermometer.read_temp()
+                print('Temperature = {}'.format(temp))
+                self._current_segment = segment
+                segment.execute_segmemt(self._controller)
 
-            if not self._start:
-                break
+                if not self._start:
+                    break
 
-        if not self._repeat or not self._start:
-            self._current_segment = None
-            self._status = RunnerStatus.Idle
-            self._start = False
-            return
+            if not self._repeat or not self._start:
+                self._current_segment = None
+                self._status = RunnerStatus.Idle
+                self._start = False
+                return
         
     @property
     def status(self) -> RunnerStatus:
