@@ -67,23 +67,29 @@ class WaterScheme:
     def __init__(self):
         self._segments = []
 
-    def __setitem__(self, pos, segment: Segment):
+    def __setitem__(self, pos: int, segment: Segment):
+        if pos >= len(self._segments):
+	        raise IndexError('list index out of range')
         self._segments[pos] = segment
 
-    def __getitem__(self, pos):
+    def __getitem__(self, pos: int):
+        if pos >= len(self._segments):
+            raise IndexError('list index out of range')
         return self._segments[pos]
 
     def add(self, segment: Segment):
         self._segments.append(segment)
 
-    def remove_at(self, pos):
+    def remove_at(self, pos: int):
+        if pos >= len(self._segments):
+            raise IndexError('list index out of range')
         del self._segments[pos]
 
     def clear(self):
         self._segments.clear()
 
     @property
-    def segments(self):
+    def segments(self) -> list:
         # Getting the segments
         return self._segments
 
@@ -116,10 +122,8 @@ class SchemeRunner:
     def stop(self) -> None:
         self._start = False
         self._thread.join(10)
-        self._status = RunnerStatus.Idle
-        self._current_segment = None
-
-    def start(self, repeat: bool):
+        
+    def start(self, repeat: bool = False):
         self._start = True
         self._status = RunnerStatus.Running
         self._repeat = repeat
@@ -128,27 +132,27 @@ class SchemeRunner:
         self._thread.start()
 
     def _thread_task(self):
-        while self._start:
-            for segment in self._waterscheme.segments:
-                while self._pause is True:
-                    self._status = RunnerStatus.Paused
-                    print("paused...")
-                else:
-                    self._status = RunnerStatus.Running
-                print('Executing Segment {}'.format(segment), flush=True)
-                temp = thermometer.read_temp()
-                print('Temperature = {}'.format(temp))
-                self._current_segment = segment
-                segment.execute_segmemt(self._controller)
+        for segment in self._waterscheme.segments:
+            while self._pause is True:
+                self._status = RunnerStatus.Paused
+                print("paused...")
+            else:
+                self._status = RunnerStatus.Running
+            print('Executing Segment {}'.format(segment), flush=True)
+            temp = thermometer.read_temp()
+            print('Temperature = {}'.format(temp))
+            self._current_segment = segment
+            segment.execute_segmemt(self._controller)
 
-            if not self._repeat:
-                self._current_segment = None
-                self._status = RunnerStatus.Idle
-                self._start = False
-                return
-        else:
+            if not self._start:
+                break
+
+        if not self._repeat or not self._start:
+            self._current_segment = None
+            self._status = RunnerStatus.Idle
+            self._start = False
             return
-
+        
     @property
     def status(self) -> RunnerStatus:
         return self._status
