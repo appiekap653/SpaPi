@@ -2,6 +2,7 @@
 import time
 from abc import ABC, abstractmethod
 from threading import Thread
+from enum import Enum
 from water import controllers
 from sauna import thermometer
 
@@ -86,6 +87,12 @@ class WaterScheme:
         # Getting the segments
         return self._segments
 
+"""Representation of the current status of the SchemeRunner"""
+class RunnerStatus(Enum):
+    Idle = 0
+    Running = 1
+    Paused = 2
+
 """SchemeRunner to start/pause/resume a waterscheme"""
 class SchemeRunner:
 
@@ -96,7 +103,9 @@ class SchemeRunner:
         self._pause = False
         self._start = False
         self._repeat = False
-        self._running = False
+
+        self._status = RunnerStatus.Idle
+        self._current_segment = None
 
     def pause(self) -> None:
         self._pause = True
@@ -106,12 +115,13 @@ class SchemeRunner:
 
     def stop(self) -> None:
         self._start = False
-        self._thread.join()
-        self._running = False
+        self._thread.join(10)
+        self._status = RunnerStatus.Idle
+        self._current_segment = None
 
     def start(self, repeat: bool):
         self._start = True
-        self._running = True
+        self._status = RunnerStatus.Running
         self._repeat = repeat
 
         self._thread = Thread(target = self._thread_task)
@@ -121,22 +131,31 @@ class SchemeRunner:
         while self._start:
             for segment in self._waterscheme.segments:
                 while self._pause is True:
+                    self._status = RunnerStatus.Paused
                     print("paused...")
+                else:
+                    self._status = RunnerStatus.Running
                 print('Executing Segment {}'.format(segment), flush=True)
                 temp = thermometer.read_temp()
                 print('Temperature = {}'.format(temp))
+                self._current_segment = segment
                 segment.execute_segmemt(self._controller)
 
             if not self._repeat:
-                self._running = False
+                self._current_segment = None
+                self._status = RunnerStatus.Idle
                 self._start = False
                 return
         else:
             return
 
     @property
-    def running(self) -> bool:
-        return self._running
+    def status(self) -> RunnerStatus:
+        return self._status
+
+    @property
+    def current_segment(self) -> Segment:
+        return self._current_segment
 
     @property
     def waterscheme(self) -> WaterScheme:
