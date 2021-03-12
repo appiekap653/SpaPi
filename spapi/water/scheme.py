@@ -147,7 +147,7 @@ class SchemeRunner:
         self._repeat = False
 
         self._status = RunnerStatus.Idle
-        self._current_segment = None
+        self._current_segment = self._waterscheme[0]
 
     def pause(self) -> None:
         self._pause = True
@@ -186,7 +186,7 @@ class SchemeRunner:
                     break
 
             if not self._repeat or not self._start:
-                self._current_segment = None
+                self._current_segment = self._waterscheme[0]
                 self._status = RunnerStatus.Idle
                 self._start = False
                 return
