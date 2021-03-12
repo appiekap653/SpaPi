@@ -18,6 +18,16 @@ class Segment(ABC):
     def execute_segmemt(self, watercontroller: controllers.WaterController) -> bool:
         """Method to execute the segment"""
 
+    @property
+    @abstractmethod
+    def Type(self) -> str:
+        """Returns a string representation of the segment type"""
+
+    @property
+    @abstractmethod
+    def Data(self) -> str:
+        """Returns a string representation of comma-seperated segment data"""
+
 class WaterSegment(Segment):
     """Water segment to run water for a given duration"""
     def __init__(self, duration):
@@ -31,6 +41,15 @@ class WaterSegment(Segment):
         watercontroller.water_off()
         return True
 
+    @property
+    def Type(self) -> str:
+        return self.__class__.__name__
+
+    @property
+    def Data(self) -> str:
+        data = 'Duration:{}'.format(self._ontime)
+        return data
+
 class IdleSegment(Segment):
     """Idle segment to wait for a given duration"""
     def __init__(self, duration):
@@ -43,9 +62,18 @@ class IdleSegment(Segment):
             watercontroller.water_off()
         return True
 
+    @property
+    def Type(self) -> str:
+        return self.__class__.__name__
+
+    @property
+    def Data(self) -> str:
+        data = 'Duration:{}'.format(self._ontime)
+        return data
+
 class BurstSegment(Segment):
-    """Burst segment to run water in burst for a given duration
-    then stop for a given duration and repeat a number of times"""
+    """Burst segment to run water for a given duration then stop 
+    for a given duration and repeat for a specified number of times"""
     def __init__(self, on_time, off_time, repeat_number: int):
         self._ontime = on_time
         self._offtime = off_time
@@ -61,9 +89,17 @@ class BurstSegment(Segment):
                 watercontroller.water_off()
         return True
 
-"""Scheme that holds diferent segments to execute"""
-class WaterScheme:
+    @property
+    def Type(self) -> str:
+        return self.__class__.__name__
 
+    @property
+    def Data(self) -> str:
+        data = 'Duration_On:{},Duration_Off:{},Repeat_Number:{}'.format(self._ontime, self._offtime, self._repeatnumber)
+        return data
+
+class WaterScheme:
+    """Scheme that holds diferent segments to execute"""
     def __init__(self):
         self._segments = []
 
@@ -139,7 +175,8 @@ class SchemeRunner:
                     print("paused...")
                 else:
                     self._status = RunnerStatus.Running
-                print('Executing Segment {}'.format(segment), flush=True)
+                print('Executing Segment: {}'.format(segment.Type), flush=True)
+                print('Segment Data: {}'.format(segment.Data), flush=True)
                 temp = thermometer.read_temp()
                 print('Temperature = {}'.format(temp))
                 self._current_segment = segment
