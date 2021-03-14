@@ -185,9 +185,9 @@ class SchemeRunner:
 
                 print('Executing Segment: {}'.format(segment.Type), flush=True)
                 print('Segment Data: {}'.format(segment.Data), flush=True)
-                print('Current Index: {}'.format(self.current_segment))
-                print('Previous Index: {}'.format(self.previous_segment))
-                print('Next Index: {}'.format(self.next_segment))
+                print('Current Index: {}'.format(self._waterscheme.segments.index(self.current_segment)))
+                print('Previous Index: {}'.format(self._waterscheme.segments.index(self.previous_segment)))
+                print('Next Index: {}'.format(self._waterscheme.segments.index(self.next_segment)))
                 
                 segment.execute_segmemt(self._controller)
 
