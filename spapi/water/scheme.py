@@ -111,7 +111,7 @@ class WaterScheme:
     def __getitem__(self, pos: int):
         if pos >= len(self._segments):
             raise IndexError('list index out of range')
-        return self._segments[pos]
+        return self._segments[pos]    
 
     def add(self, segment: Segment):
         self._segments.append(segment)
@@ -148,6 +148,8 @@ class SchemeRunner:
 
         self._status = RunnerStatus.Idle
         self._current_segment = self._waterscheme[0]
+        self._cur_segment_index = 0
+        self._prev_segment_index = 0
 
     def pause(self) -> None:
         self._pause = True
@@ -172,15 +174,24 @@ class SchemeRunner:
             for segment in self._waterscheme.segments:
                 while self._pause is True:
                     self._status = RunnerStatus.Paused
-                    print("paused...")
                 else:
                     self._status = RunnerStatus.Running
-                print('Executing Segment: {}'.format(segment.Type), flush=True)
-                print('Segment Data: {}'.format(segment.Data), flush=True)
+
                 temp = thermometer.read_temp()
                 print('Temperature = {}'.format(temp))
+
+                self._cur_segment_index = self._waterscheme.segments.index(segment)
                 self._current_segment = segment
+
+                print('Executing Segment: {}'.format(segment.Type), flush=True)
+                print('Segment Data: {}'.format(segment.Data), flush=True)
+                print('Current Index: {}'.format(self.current_segment))
+                print('Previous Index: {}'.format(self.previous_segment))
+                print('Next Index: {}'.format(self.next_segment))
+                
                 segment.execute_segmemt(self._controller)
+
+                self._prev_segment_index = self._waterscheme.segments.index(segment)
 
                 if not self._start:
                     break
@@ -198,6 +209,20 @@ class SchemeRunner:
     @property
     def current_segment(self) -> Segment:
         return self._current_segment
+
+    @property
+    def next_segment(self) -> Segment:
+        if (self._cur_segment_index + 1) < len(self._waterscheme.segments):
+            return self._waterscheme.segments[self._cur_segment_index + 1]
+        else:
+            return self._waterscheme.segments[0]
+
+    @property
+    def previous_segment(self) -> Segment:
+        if self._prev_segment_index >= 0:
+            return self._waterscheme.segments[self._prev_segment_index]
+        else:
+            return self._waterscheme.segments[0]
 
     @property
     def waterscheme(self) -> WaterScheme:
