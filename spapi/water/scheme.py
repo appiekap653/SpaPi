@@ -197,6 +197,8 @@ class SchemeRunner:
                     break
 
             if not self._repeat or not self._start:
+                self._cur_segment_index = 0
+                self._prev_segment_index = 0
                 self._current_segment = self._waterscheme[0]
                 self._status = RunnerStatus.Idle
                 self._start = False
