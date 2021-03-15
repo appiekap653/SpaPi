@@ -141,6 +141,7 @@ class SchemeRunner:
     def __init__(self, controller: controllers.WaterController, scheme: WaterScheme):
         self._controller = controller
         self._waterscheme = scheme
+        self._thread = Thread(target = self._thread_task)
 
         self._pause = False
         self._start = False
@@ -152,21 +153,23 @@ class SchemeRunner:
         self._prev_segment_index = 0
 
     def pause(self) -> None:
-        self._pause = True
+        if self._start:
+            self._pause = True
 
     def resume(self) -> None:
         self._pause = False
 
     def stop(self) -> None:
-        self._start = False
-        self._thread.join(10)
+        if self._start:
+            self._start = False
+            self._thread._stop()
+            self._thread.join()
         
     def start(self, repeat: bool = False):
         self._start = True
         self._status = RunnerStatus.Running
         self._repeat = repeat
 
-        self._thread = Thread(target = self._thread_task)
         self._thread.start()
 
     def _thread_task(self):
