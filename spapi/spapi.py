@@ -1,8 +1,6 @@
 """
 SpaPi, Sauna and Automatic-Water control for RaspberryPi
 """
-import time
-
 from water import controllers
 from water import scheme
 
