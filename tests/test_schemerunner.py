@@ -1,36 +1,48 @@
 import unittest   # The test framework
-from water import controllers
-from water import scheme
+from unittest.mock import patch, MagicMock
+from spapi.water import controllers
+from spapi.water import scheme
 
-class Test_TestIncrementDecrement(unittest.TestCase):
-    CONTROLLER = controllers.WaterController(17)
-    SCHEME = scheme.WaterScheme()
-    SEGMENT1 = scheme.BurstSegment(3, 2, 2)
-    SEGMENT2 = scheme.IdleSegment(600)
-    SEGMENT3 = scheme.BurstSegment(6, 2, 4)
-    SEGMENT4 = scheme.IdleSegment(300)
+class Test_TestSchemeRunner(unittest.TestCase):
 
-    SCHEME.add(SEGMENT1)
-    SCHEME.add(SEGMENT2)
-    SCHEME.add(SEGMENT3)
-    SCHEME.add(SEGMENT4)
+    def setUpModule():
+        MockRPi = MagicMock()
+        modules = {
+            "RPi": MockRPi,
+            "RPi.GPIO": MockRPi.GPIO
+        }
+        patcher = patch.dict("sys.modules", modules)
+        patcher.start()
 
-    SCHEMERUNNER = scheme.SchemeRunner(CONTROLLER, SCHEME)
+    @patch("spapi.water.controllers.WaterController", autospec=True)
+    def setUp(self, mock_watercontroller):
+        self.CONTROLLER = controllers.WaterController(17)
+        self.SCHEME = scheme.WaterScheme()
+        self.SEGMENT1 = scheme.BurstSegment(3, 2, 2)
+        self.SEGMENT2 = scheme.IdleSegment(600)
+        self.SEGMENT3 = scheme.BurstSegment(3, 2, 2)
+        self.SEGMENT4 = scheme.IdleSegment(1)
 
-    def test_increment(self):
-        try:
-            SCHEMERUNNER.start(True)
-            while SCHEMERUNNER.status != scheme.RunnerStatus.Idle:
-                self.assertEqual(inc_dec.increment(3), 4)
+        self.SCHEME.add(self.SEGMENT1)
+        self.SCHEME.add(self.SEGMENT2)
+        self.SCHEME.add(self.SEGMENT3)
+        self.SCHEME.add(self.SEGMENT4)
 
-        except KeyboardInterrupt:
+        self.SCHEMERUNNER = scheme.SchemeRunner(self.CONTROLLER, self.SCHEME)
+
+    def tearDown(self):
+        self.CONTROLLER.cleanup()
+
+    def teardownModule():
+        patcher.stop()
+
+    @patch("spapi.sauna.thermometer.read_temp", autospec=True)
+    def test_status_running(self, mock_therm):
+        self.SCHEMERUNNER.start(True)
+        while self.SCHEMERUNNER.status != scheme.RunnerStatus.Idle:
             pass
-        finally:
-            print("stopping threads...")
-            SCHEMERUNNER.stop()
-            print("cleuning up GPIO...")
-            CONTROLLER.cleanup()
-            print("done and closed")
+        self.assertEqual(self.SCHEMERUNNER.status, scheme.RunnerStatus.Running)
+        self.SCHEMERUNNER.stop()
 
 if __name__ == '__main__':
     unittest.main()
