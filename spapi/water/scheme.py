@@ -3,8 +3,8 @@ import time
 from abc import ABC, abstractmethod
 from threading import Thread
 from enum import Enum
-from water import controllers
-from sauna import thermometer
+from spapi import gpio_controller
+from spapi.sauna import thermometer
 
 class Segment(ABC):
     """
@@ -15,7 +15,7 @@ class Segment(ABC):
     Segments.
     """
     @abstractmethod
-    def execute_segmemt(self, watercontroller: controllers.WaterController, runner) -> bool:
+    def execute_segmemt(self, controller: gpio_controller.WaterController, runner) -> bool:
         """Method to execute the segment"""
 
     @property
@@ -33,16 +33,19 @@ class WaterSegment(Segment):
     def __init__(self, duration: int):
         self._ontime = duration
 
-    def execute_segmemt(self, watercontroller: controllers.WaterController, runner) -> bool:
+    def execute_segmemt(self, controller: gpio_controller.WaterController, runner) -> bool:
+        water_controller = controller
+
         t_end = time.time() + self._ontime
 
         while time.time() < t_end:
-            watercontroller.water_on()
+            water_controller.water_on()
 
             if not runner._start or runner._skip_backward or runner._skip_forward:
                 break
 
-        watercontroller.water_off()
+        water_controller.water_off()
+
         return True
 
     @property
@@ -68,11 +71,13 @@ class IdleSegment(Segment):
     def __init__(self, duration: int):
         self._ontime = duration
 
-    def execute_segmemt(self, watercontroller: controllers.WaterController, runner) -> bool:
+    def execute_segmemt(self, controller: gpio_controller.WaterController, runner) -> bool:
+        water_controller = controller
+
         t_end = time.time() + self._ontime
 
         while time.time() < t_end:
-            watercontroller.water_off()
+            water_controller.water_off()
 
             if not runner._start or runner._skip_backward or runner._skip_forward:
                 break
@@ -105,12 +110,14 @@ class BurstSegment(Segment):
         self._offtime = duration_off
         self._repeatnumber = repeat_number
 
-    def execute_segmemt(self, watercontroller: controllers.WaterController, runner) -> bool:
+    def execute_segmemt(self, controller: gpio_controller.WaterController, runner) -> bool:
+        water_controller = controller
+
         for _ in range(self._repeatnumber, 0, -1):
             t_on = time.time() + self._ontime
 
             while time.time() < t_on:
-                watercontroller.water_on()
+                water_controller.water_on()
 
                 if not runner._start or runner._skip_backward or runner._skip_forward:
                     break
@@ -118,7 +125,7 @@ class BurstSegment(Segment):
             t_off = time.time() + self._offtime
 
             while time.time() < t_off:
-                watercontroller.water_off()
+                water_controller.water_off()
 
                 if not runner._start or runner._skip_backward or runner._skip_forward:
                     break
@@ -211,7 +218,7 @@ class RunnerStatus(Enum):
 class SchemeRunner:
     """SchemeRunner to start/pause/resume a waterscheme"""
 
-    def __init__(self, controller: controllers.WaterController, scheme: WaterScheme):
+    def __init__(self, controller: gpio_controller.WaterController, scheme: WaterScheme):
         self._controller = controller
         self._waterscheme = scheme
         self._thread = Thread(target=self._thread_task)
@@ -256,23 +263,21 @@ class SchemeRunner:
     def _thread_task(self):
         while self._start:
             i = 0
-            while i < len(self._waterscheme.segments):
+            while i < (len(self._waterscheme.segments)):
                 segment = self._waterscheme.segments[i]
 
                 while self._pause is True:
                     self._status = RunnerStatus.Paused
-                else:
-                    self._status = RunnerStatus.Running
-                    break
+                self._status = RunnerStatus.Running
 
                 temp = thermometer.read_temp()
                 print('Temperature = {}'.format(temp))
 
                 self._cur_segment_index = self._waterscheme.segments.index(segment)
 
-                print('Executing Segment: {}'.format(segment.Type), flush=True)
+                print('Executing Segment: {}'.format(segment.segment_type), flush=True)
 
-                print('Segment Data: {}'.format(segment.Data), flush=True)
+                print('Segment Data: {}'.format(segment.data), flush=True)
 
                 print('Current Index: {}'.format(self._waterscheme.segments.index(
                     self.current_segment)))
@@ -337,13 +342,3 @@ class SchemeRunner:
     def waterscheme(self, value: WaterScheme):
         # Setting the watherscheme
         self._waterscheme = value
-
-    @property
-    def controller(self) -> controllers.WaterController:
-        # Getting the Controller
-        return self._controller
-
-    @controller.setter
-    def controller(self, value: controllers.WaterController):
-        # Setting the controller
-        self._controller = value
