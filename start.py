@@ -1,23 +1,23 @@
 """
 SpaPi, Sauna and Automatic-Water control for RaspberryPi
 """
-from water import controllers
-from water import scheme
+from spapi.water import scheme
+from spapi import gpio_controller
 
-CONTROLLER = controllers.WaterController(17)
+CONTROLLER = gpio_controller.Controllers()
 SCHEME = scheme.WaterScheme()
 
-SEGMENT1 = scheme.BurstSegment(3, 2, 2)
-SEGMENT2 = scheme.IdleSegment(600)
-SEGMENT3 = scheme.BurstSegment(6, 2, 4)
-SEGMENT4 = scheme.IdleSegment(300)
+SEGMENT1 = scheme.BurstSegment(10, 4, 3)
+SEGMENT2 = scheme.IdleSegment(240)
+SEGMENT3 = scheme.BurstSegment(10, 4, 2)
+SEGMENT4 = scheme.IdleSegment(240)
 
 SCHEME.add(SEGMENT1)
 SCHEME.add(SEGMENT2)
 SCHEME.add(SEGMENT3)
 SCHEME.add(SEGMENT4)
 
-SCHEMERUNNER = scheme.SchemeRunner(CONTROLLER, SCHEME)
+SCHEMERUNNER = scheme.SchemeRunner(CONTROLLER.watercontroller(), SCHEME)
 
 try:
     SCHEMERUNNER.start(True)
