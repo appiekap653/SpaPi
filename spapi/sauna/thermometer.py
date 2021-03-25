@@ -1,6 +1,23 @@
 """Read temperture values from DS18B20"""
 import glob
+from abc import ABC, abstractmethod
 from spapi import gpio_controller
+
+class Thermometer(ABC):
+
+    @abstractmethod
+    def Read_Temp(self):
+        pass
+
+    @property
+    @abstractmethod
+    def Pin_Number(self) -> int:
+        pass
+
+    @Pin_Number.setter
+    @abstractmethod
+    def Pin_Number(self, value: int):
+        pass
 
 def read_temp_raw(sensor_file):
     sfile = open(sensor_file, 'r')
