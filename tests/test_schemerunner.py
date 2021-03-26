@@ -1,7 +1,7 @@
 import unittest   # The test framework
 from unittest.mock import patch, MagicMock
 from spapi.water import scheme
-from spapi import gpio_controller
+from spapi import gpio
 
 class Test_TestSchemeRunner(unittest.TestCase):
     patcher = None
@@ -17,7 +17,7 @@ class Test_TestSchemeRunner(unittest.TestCase):
 
     @patch("spapi.gpio_controller.Controllers", autospec=True)
     def setUp(self, mock_watercontroller):
-        self.CONTROLLER = gpio_controller.Controllers()
+        self.CONTROLLER = gpio.GPIOController()
         self.SCHEME = scheme.WaterScheme()
         self.SEGMENT1 = scheme.BurstSegment(3, 2, 2)
         self.SEGMENT2 = scheme.IdleSegment(600)

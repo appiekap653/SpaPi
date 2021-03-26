@@ -3,8 +3,7 @@ import time
 from abc import ABC, abstractmethod
 from threading import Thread
 from enum import Enum
-from spapi import gpio_controller
-from spapi.sauna import thermometer
+from spapi import gpio
 
 class Segment(ABC):
     """
@@ -15,7 +14,7 @@ class Segment(ABC):
     Segments.
     """
     @abstractmethod
-    def execute_segmemt(self, controller: gpio_controller.WaterController, runner) -> bool:
+    def execute_segmemt(self, controller: gpio.WaterController, runner) -> bool:
         """Method to execute the segment"""
 
     @property
@@ -33,7 +32,7 @@ class WaterSegment(Segment):
     def __init__(self, duration: int):
         self._ontime = duration
 
-    def execute_segmemt(self, controller: gpio_controller.WaterController, runner) -> bool:
+    def execute_segmemt(self, controller: gpio.WaterController, runner) -> bool:
         water_controller = controller
 
         t_end = time.time() + self._ontime
@@ -71,7 +70,7 @@ class IdleSegment(Segment):
     def __init__(self, duration: int):
         self._ontime = duration
 
-    def execute_segmemt(self, controller: gpio_controller.WaterController, runner) -> bool:
+    def execute_segmemt(self, controller: gpio.WaterController, runner) -> bool:
         water_controller = controller
 
         t_end = time.time() + self._ontime
@@ -110,7 +109,7 @@ class BurstSegment(Segment):
         self._offtime = duration_off
         self._repeatnumber = repeat_number
 
-    def execute_segmemt(self, controller: gpio_controller.WaterController, runner) -> bool:
+    def execute_segmemt(self, controller: gpio.WaterController, runner) -> bool:
         water_controller = controller
 
         for _ in range(self._repeatnumber, 0, -1):
@@ -218,7 +217,7 @@ class RunnerStatus(Enum):
 class SchemeRunner:
     """SchemeRunner to start/pause/resume a waterscheme"""
 
-    def __init__(self, controller: gpio_controller.WaterController, scheme: WaterScheme):
+    def __init__(self, controller: gpio.WaterController, scheme: WaterScheme):
         self._controller = controller
         self._waterscheme = scheme
         self._thread = Thread(target=self._thread_task)
@@ -269,9 +268,6 @@ class SchemeRunner:
                 while self._pause is True:
                     self._status = RunnerStatus.Paused
                 self._status = RunnerStatus.Running
-
-                temp = thermometer.read_temp()
-                print('Temperature = {}'.format(temp))
 
                 self._cur_segment_index = self._waterscheme.segments.index(segment)
 
