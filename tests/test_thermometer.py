@@ -3,21 +3,37 @@ import time
 from spapi.sauna import thermometer
 from spapi import gpio
 
-class Test_TestThermometer(unittest.TestCase):
+class Test_Thermometer(unittest.TestCase):
 
     def setUp(self):
         self._controller = gpio.GPIOController()
-        self._thermdevice = thermometer.DS18B20(4, True, self._controller)
-        self._thermometer = thermometer.Thermometer(self._thermdevice, 2)
 
     def tearDown(self):
         self._controller.cleanup()
 
-    def test_temperature_value(self):
+    def test_DS18B20_temperature_value(self):
+        thermdevice = thermometer.DS18B20(4, True, self._controller)
+        therm = thermometer.Thermometer(thermdevice)
         time.sleep(5)
-        self.assertIsNotNone(self._thermometer.temperature)
-        print("Temperature: {}".format(self._thermometer.temperature))
-        self.assertNotEqual(self._thermometer.temperature, 999.9)
+        self.assertIsNotNone(therm.temperature)
+        print("DS18B20 Temperature: {}".format(therm.temperature))
+        self.assertNotEqual(therm.temperature, 999.9)
+
+    def test_DHT22_temperature_value(self):
+        thermdevice = thermometer.DHT22(18, False, self._controller)
+        therm = thermometer.Thermometer(thermdevice)
+        time.sleep(5)
+        self.assertIsNotNone(therm.temperature)
+        print("DHT22 Temperature: {}".format(therm.temperature))
+        self.assertNotEqual(therm.temperature, 999.9)
+
+    def test_DHT22_humidity_value(self):
+        thermdevice = thermometer.DHT22(18, False, self._controller)
+        therm = thermometer.Thermometer(thermdevice)
+        time.sleep(5)
+        self.assertIsNotNone(therm.humidity)
+        print("DHT22 Humidity: {}".format(therm.humidity))
+        self.assertNotEqual(therm.humidity, 0.0)
 
 if __name__ == '__main__':
     unittest.main()

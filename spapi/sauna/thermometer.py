@@ -3,7 +3,10 @@ import glob
 import time
 from abc import ABC, abstractmethod
 from threading import Thread
+import Adafruit_DHT
 from spapi import gpio
+
+#TODO Better class design to have different options for therm devices (only temperature, only humidity OR both)
 
 class ThermDevice(ABC):
 
@@ -19,6 +22,20 @@ class ThermDevice(ABC):
     @abstractmethod
     def read_temp(self) -> float:
         pass
+
+    @abstractmethod
+    def read_humid(self) -> float:
+        pass
+
+    @property
+    @abstractmethod
+    def has_temperature(self) -> bool:
+        return False
+
+    @property
+    @abstractmethod
+    def has_humidity(self) -> bool:
+        return False
 
     @property
     def pin(self) -> int:
@@ -51,11 +68,47 @@ class DS18B20(ThermDevice):
             except:
                 return 999.9
 
+    def read_humid(self) -> float:
+        pass
+
+    def has_temperature(self) -> bool:
+        return True
+
+    def has_humidity(self) -> bool:
+        return False
+
+class DHT22(ThermDevice):
+
+    _temperature = 999.9
+    _humidity = 0
+    _sensor = Adafruit_DHT.DHT22
+
+    def setup(self):
+        if self._pull_up:
+            self._controller.setup_input(self._pin_number, gpio.PullUpDown.PUD_UP)
+        else:
+            self._controller.setup_input(self._pin_number, gpio.PullUpDown.PUD_OFF)
+
+    def read_temp(self) -> float:
+        self._humidity, self._temperature = Adafruit_DHT.read_retry(self._sensor, self._pin_number)
+        return self._temperature
+
+    def read_humid(self) -> float:
+        self._humidity, self._temperature = Adafruit_DHT.read_retry(self._sensor, self._pin_number)
+        return self._humidity
+
+    def has_temperature(self) -> bool:
+        return True
+
+    def has_humidity(self) -> bool:
+        return True
+
 class Thermometer:
 
     _temperature = 999.9
+    _humidity = 0.0
 
-    def __init__(self, device: ThermDevice, interval: int):
+    def __init__(self, device: ThermDevice, interval: int = 2.5):
         self._therm_device = device
         self._interval = interval
 
@@ -67,7 +120,11 @@ class Thermometer:
 
     def _thread_task(self):
         while True:
-            self._temperature = self._therm_device.read_temp()
+            if self._therm_device.has_temperature:
+                self._temperature = self._therm_device.read_temp()
+            if self._therm_device.has_humidity:
+                self._humidity = self._therm_device.read_humid()
+
             time.sleep(self._interval)
 
     @property
@@ -77,3 +134,7 @@ class Thermometer:
     @property
     def temperature(self) -> float:
         return self._temperature
+
+    @property
+    def humidity(self) -> float:
+        return self._humidity
