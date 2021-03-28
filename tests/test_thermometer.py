@@ -5,11 +5,13 @@ from spapi import gpio
 
 class Test_Thermometer(unittest.TestCase):
 
-    def setUp(self):
-        self._controller = gpio.GPIOController()
+    @classmethod
+    def setUpClass(cls):
+        cls._controller = gpio.GPIOController()
 
-    def tearDown(self):
-        self._controller.cleanup()
+    @classmethod
+    def tearDownClass(cls):
+        cls._controller.cleanup()
 
     def test_DS18B20_temperature_value(self):
         thermdevice = thermometer.DS18B20(4, True, self._controller)
@@ -30,7 +32,7 @@ class Test_Thermometer(unittest.TestCase):
     def test_DHT22_humidity_value(self):
         thermdevice = thermometer.DHT22(18, False, self._controller)
         therm = thermometer.Thermometer(thermdevice)
-        time.sleep(5)
+        time.sleep(8)
         self.assertIsNotNone(therm.humidity)
         print("DHT22 Humidity: {}".format(therm.humidity))
         self.assertNotEqual(therm.humidity, 0.0)

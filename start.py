@@ -8,7 +8,10 @@ from spapi import gpio
 CONTROLLER = gpio.GPIOController()
 
 THERMDEVICE = thermometer.DS18B20(4, True, CONTROLLER)
-THERMOMETER = thermometer.Thermometer(THERMDEVICE, 2)
+THERMOMETER = thermometer.Thermometer(THERMDEVICE)
+
+THERMDEVICEDHT = thermometer.DHT22(18, False, CONTROLLER)
+THERMOMETERDHT = thermometer.Thermometer(THERMDEVICEDHT)
 
 SCHEME = scheme.WaterScheme()
 
@@ -32,6 +35,7 @@ try:
         if CURRENT_SEGMENT != SCHEMERUNNER.current_segment:
             CURRENT_SEGMENT = SCHEMERUNNER.current_segment
             print("Temperature: {}".format(THERMOMETER.temperature))
+            print("Humidity: {}".format(THERMOMETERDHT.humidity))
 
 except KeyboardInterrupt:
     pass

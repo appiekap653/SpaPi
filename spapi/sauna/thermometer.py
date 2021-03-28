@@ -79,8 +79,6 @@ class DS18B20(ThermDevice):
 
 class DHT22(ThermDevice):
 
-    _temperature = 999.9
-    _humidity = 0
     _sensor = Adafruit_DHT.DHT22
 
     def setup(self):
@@ -90,12 +88,12 @@ class DHT22(ThermDevice):
             self._controller.setup_input(self._pin_number, gpio.PullUpDown.PUD_OFF)
 
     def read_temp(self) -> float:
-        self._humidity, self._temperature = Adafruit_DHT.read_retry(self._sensor, self._pin_number)
-        return self._temperature
+        humidity, temperature = Adafruit_DHT.read_retry(self._sensor, self._pin_number)
+        return temperature
 
     def read_humid(self) -> float:
-        self._humidity, self._temperature = Adafruit_DHT.read_retry(self._sensor, self._pin_number)
-        return self._humidity
+        humidity, temperature = Adafruit_DHT.read_retry(self._sensor, self._pin_number)
+        return humidity
 
     def has_temperature(self) -> bool:
         return True
