@@ -33,7 +33,7 @@ I'm using the following components in my setup to control my sauna and to automa
 
 Sauna Control | Waterflow | Thermometer | Hygrometer | Display
 --- | --- | --- | --- | ---
-2x Relais (Spoel: DC5V 760mA, Load: 250VAC 30A), one is used for the heater* , the other for the water pump. | Micro Water Pump 120L/H DC2.5-6V 130-220mA, Low Noise Brushless Motor | DS18B20, Temperature range: -55°C to +125°C | DHT22 AM2302, Humidity range: 0-100% RH, Temperature range: -40 to +80°C | None _jet..._
+2x Relais (Spoel: DC5V 760mA, Load: 250VAC 30A), one is used for the heater* , the other for the water pump. | Micro Water Pump 120L/H DC2.5-6V 130-220mA, Low Noise Brushless Motor | DS18B20, Temperature range: -55°C to +125°C | DHT22 AM2302, Humidity range: 0-100% RH, Temperature range: -40 to +80°C | Inside the sauna: 1.8" Serial SPI 128x160 Color TFT LCD. Showing Temperature and Humidity values
 
 **\* make sure the _load_ covers your _heater ratings_!**
 <br />
