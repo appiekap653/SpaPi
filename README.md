@@ -45,3 +45,5 @@ I'm planning on manufacturing some simular construction made of stainless steel
 
 ![Image of water disperse setup](https://github.com/appiekap653/SpaPi/blob/development/resources/water_disperse_setup.png)
 
+![Image of display setup](https://github.com/appiekap653/SpaPi/blob/development/resources/display_setup.png)
+
