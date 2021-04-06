@@ -14,7 +14,7 @@ class ThermDevice(ABC):
     thermometer devices for initialisation with
     the Thermometer Class"""
 
-    def __init__(self, pin: int, pull_up: bool, controller: gpio.GPIOController):
+    def __init__(self, controller: gpio.GPIOController, pin: int, pull_up: bool = False):
         self._pin_number = pin
         self._pull_up = pull_up
         self._controller = controller
@@ -23,30 +23,6 @@ class ThermDevice(ABC):
     def setup(self):
         """Abstract Method that is called by the
         Thermometer Class to setup the device"""
-
-    @abstractmethod
-    def read_temp(self) -> float:
-        """Abstract Method that is called by the
-        Thermometer Class to read the temperature value
-        from the device"""
-
-    @abstractmethod
-    def read_humid(self) -> float:
-        """Abstract Method that is called by the
-        Thermometer Class to read the humidity value
-        from the device"""
-
-    @property
-    @abstractmethod
-    def has_temperature(self) -> bool:
-        """Returns if device has temperature function"""
-        return False
-
-    @property
-    @abstractmethod
-    def has_humidity(self) -> bool:
-        """Returns if device has humidity function"""
-        return False
 
     @property
     def pin(self) -> int:
@@ -58,7 +34,23 @@ class ThermDevice(ABC):
         """Returns if internal pull-up resistor is used"""
         return self._pull_up
 
-class DS18B20(ThermDevice):
+class TemperatureDevice(ThermDevice):
+
+    @abstractmethod
+    def read_temp(self):
+        """Abstract Method that is called by the
+        Thermometer Class to read the temperature value
+        from the device"""
+
+class HumidityDevice(ThermDevice):
+
+    @abstractmethod
+    def read_humid(self):
+        """Abstract Method that is called by the
+        Thermometer Class to read the humidity value
+        from the device"""
+
+class DS18B20(TemperatureDevice):
     """DS18B20 ThermDevice for initialisation with the Thermometer Class"""
 
     def setup(self):
@@ -78,22 +70,11 @@ class DS18B20(ThermDevice):
                     (discard, sep, reading) = data.partition(' t=')
                     temp_c = float(reading) / 1000.0
                     return temp_c
-                return 999.9
+                return 99.9
         except FileNotFoundError:
-            return 999.9
+            return 99.9
 
-    def read_humid(self) -> float:
-        pass
-
-    @property
-    def has_temperature(self) -> bool:
-        return True
-
-    @property
-    def has_humidity(self) -> bool:
-        return False
-
-class DHT22(ThermDevice):
+class DHT22(TemperatureDevice, HumidityDevice):
     """DHT22 ThermDevice for initialisation with the Thermometer Class"""
 
     _sensor = Adafruit_DHT.DHT22
@@ -112,19 +93,11 @@ class DHT22(ThermDevice):
         humidity, temperature = Adafruit_DHT.read_retry(self._sensor, self._pin_number)
         return humidity
 
-    @property
-    def has_temperature(self) -> bool:
-        return True
-
-    @property
-    def has_humidity(self) -> bool:
-        return True
-
 class Thermometer:
     """Thermometer Class to read temperature / humidity
     values from devices that inherit the ThermDevice Class"""
 
-    _temperature = 999.9
+    _temperature = 99.9
     _humidity = 0.0
 
     def __init__(self, device: ThermDevice, interval: int = 2.5):
@@ -139,9 +112,9 @@ class Thermometer:
 
     def _thread_task(self):
         while True:
-            if self._therm_device.has_temperature:
+            if isinstance(self._therm_device, TemperatureDevice):
                 self._temperature = self._therm_device.read_temp()
-            if self._therm_device.has_humidity:
+            if isinstance(self._therm_device, HumidityDevice):
                 self._humidity = self._therm_device.read_humid()
 
             time.sleep(self._interval)
