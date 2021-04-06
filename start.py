@@ -8,17 +8,17 @@ from spapi.sauna import display
 
 CONTROLLER = gpio.GPIOController()
 
-THERMDEVICE = thermometer.DS18B20(4, True, CONTROLLER)
+THERMDEVICE = thermometer.DS18B20(CONTROLLER, 4, True)
 THERMOMETER = thermometer.Thermometer(THERMDEVICE)
 
-THERMDEVICEDHT = thermometer.DHT22(18, False, CONTROLLER)
+THERMDEVICEDHT = thermometer.DHT22(CONTROLLER, 18)
 THERMOMETERDHT = thermometer.Thermometer(THERMDEVICEDHT)
 
 SCHEME = scheme.WaterScheme()
 
-SEGMENT1 = scheme.BurstSegment(5, 5, 2)
-SEGMENT2 = scheme.IdleSegment(600)
-SEGMENT3 = scheme.BurstSegment(10, 5, 2)
+SEGMENT1 = scheme.BurstSegment(10, 5, 3)
+SEGMENT2 = scheme.IdleSegment(300)
+SEGMENT3 = scheme.BurstSegment(10, 5, 3)
 SEGMENT4 = scheme.IdleSegment(300)
 
 SCHEME.add(SEGMENT1)
@@ -29,7 +29,7 @@ SCHEME.add(SEGMENT4)
 SCHEMERUNNER = scheme.SchemeRunner(CONTROLLER.watercontroller(), SCHEME)
 
 try:
-    display.start_display(THERMOMETERDHT)
+    DISPLAY = display.InnerDisplay(THERMOMETERDHT)
     SCHEMERUNNER.start(True)
     CURRENT_SEGMENT = SCHEMERUNNER.current_segment
 
